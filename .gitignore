@@ -1,0 +1,5 @@
+.build/
+build/
+backup/
+icon/icon-1024.png
+.DS_Store

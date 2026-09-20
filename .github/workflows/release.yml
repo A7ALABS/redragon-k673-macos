@@ -1,0 +1,48 @@
+name: Release DMG
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Version to stamp into the app (no release is created)
+        default: 0.0.0-dev
+
+permissions:
+  contents: write
+
+jobs:
+  dmg:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Resolve version
+        run: |
+          if [ "$GITHUB_REF_TYPE" = "tag" ]; then
+            echo "VERSION=${GITHUB_REF_NAME#v}" >> "$GITHUB_ENV"
+          else
+            echo "VERSION=${{ inputs.version }}" >> "$GITHUB_ENV"
+          fi
+
+      - name: Build universal app and DMG
+        run: UNIVERSAL=1 ./make-dmg.sh
+
+      - name: Checksum
+        run: cd build && shasum -a 256 "K673-Control-$VERSION.dmg" | tee "K673-Control-$VERSION.dmg.sha256"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: K673-Control-${{ env.VERSION }}
+          path: |
+            build/K673-Control-*.dmg
+            build/K673-Control-*.dmg.sha256
+
+      - name: Publish GitHub release
+        if: github.ref_type == 'tag'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" build/K673-Control-*.dmg build/K673-Control-*.dmg.sha256 \
+            --title "K673 Control $VERSION" --generate-notes
