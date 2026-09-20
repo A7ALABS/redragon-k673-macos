@@ -23,6 +23,7 @@ final class KnobController {
     private var lastKnobEvent = 0.0
     private var tap: CFMachPort?
     private var tapSource: CFRunLoopSource?
+    private var swallowedDown: Set<Int> = []
 
     private static let volumeUp: UInt32 = 0xe9
     private static let volumeDown: UInt32 = 0xea
@@ -60,6 +61,7 @@ final class KnobController {
     func setSuppressVolume(_ suppress: Bool) {
         if !suppress {
             if let tap { CGEvent.tapEnable(tap: tap, enable: false) }
+            swallowedDown.removeAll()
             tapState = .off
             return
         }
@@ -96,8 +98,18 @@ final class KnobController {
         guard let ns = NSEvent(cgEvent: event), ns.subtype.rawValue == Self.auxKeySubtype else { return false }
         let key = (ns.data1 & 0xffff_0000) >> 16
         guard key == Self.soundUpKey || key == Self.soundDownKey else { return false }
-        // The HID callback and this tap race on the same keystroke; give the callback a moment before deciding the key came from elsewhere.
-        for _ in 0..<6 {
+        // A key-up must share its key-down's fate: passing one and swallowing the other leaves macOS believing the
+        // volume key is held, which pins the volume HUD on screen.
+        let isDown = (ns.data1 & 0xff00) >> 8 == 0xa
+        guard isDown else { return swallowedDown.remove(key) != nil }
+        let swallow = cameFromKnob()
+        if swallow { swallowedDown.insert(key) } else { swallowedDown.remove(key) }
+        return swallow
+    }
+
+    private func cameFromKnob() -> Bool {
+        // The HID callback and the tap race on the same keystroke; give the callback a moment before deciding the key came from elsewhere.
+        for _ in 0..<10 {
             lock.lock()
             let age = CFAbsoluteTimeGetCurrent() - lastKnobEvent
             lock.unlock()
