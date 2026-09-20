@@ -76,12 +76,19 @@ public struct Profile: Equatable, Sendable {
         return o + 1 < 126 ? o : nil
     }
 
+    /// The custom effect keeps its brightness outside the per-effect table; at 0 there the per-key colors stay dark.
+    private static let customBrightnessOffset = 117
+
+    private func brightnessOffset(_ effect: UInt8) -> Int? {
+        effect == Effect.custom.id ? Self.customBrightnessOffset : paramOffset(effect)
+    }
+
     public func brightness(for effect: UInt8) -> UInt8 {
-        paramOffset(effect).map { min(bytes[$0], Self.maxLevel) } ?? Self.maxLevel
+        brightnessOffset(effect).map { min(bytes[$0], Self.maxLevel) } ?? Self.maxLevel
     }
 
     public mutating func setBrightness(_ v: UInt8, for effect: UInt8) {
-        guard let o = paramOffset(effect) else { return }
+        guard let o = brightnessOffset(effect) else { return }
         bytes[o] = min(v, Self.maxLevel)
     }
 

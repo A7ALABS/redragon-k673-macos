@@ -106,6 +106,7 @@ final class AppModel: ObservableObject {
         pending[key]?.cancel()
         let item = DispatchWorkItem { [weak self] in
             guard let self, let kb = self.kb else { return }
+            self.pending[key] = nil
             self.busy = true
             self.run {
                 do {
@@ -123,12 +124,26 @@ final class AppModel: ObservableObject {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.25, execute: item)
     }
 
-    func updateProfile(_ change: (inout Profile) -> Void) {
+    /// `force` writes even when the cached profile already matches: the effect can be changed from the keyboard itself
+    /// (Fn + Ins, knob click), so the cache is not proof of what the keyboard is showing.
+    func updateProfile(force: Bool = false, _ change: (inout Profile) -> Void) {
         guard var p = profile else { return }
         change(&p)
-        guard p != profile else { return }
+        guard force || p != profile else { return }
         profile = p
         schedule("profile") { try $0.writeProfile(p) }
+    }
+
+    /// Picks up effect changes made on the keyboard while the app was in the background.
+    func refreshProfile() {
+        guard let kb, case .connected = connection, !busy, pending.isEmpty else { return }
+        run { [weak self] in
+            guard let fresh = try? kb.readProfile() else { return }
+            self?.onMain {
+                guard let self, !self.busy else { return }
+                self.profile = fresh
+            }
+        }
     }
 
     func setColor(_ c: RGB, for effect: UInt8) {
@@ -144,7 +159,11 @@ final class AppModel: ObservableObject {
         for i in indices { colors[i] = c }
         keyColors = colors
         schedule("colors") { try $0.writeKeyColors(colors) }
-        updateProfile { $0.effectID = Effect.custom.id }
+        updateProfile(force: true) { p in
+            p.effectID = Effect.custom.id
+            // Painting onto a keyboard whose custom brightness was turned to 0 (Fn + ↓) would otherwise look like nothing happened.
+            if p.brightness(for: Effect.custom.id) == 0 { p.setBrightness(Profile.maxLevel, for: Effect.custom.id) }
+        }
     }
 
     func remap(_ index: Int, to action: KeyAction) {

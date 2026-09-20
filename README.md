@@ -94,8 +94,8 @@ permissions again.
 
 - Wired USB (`258a:010c`) and Bluetooth. Wired uses a different framing (519-byte feature reports) that is untested here.
 - Fn-layer remapping, macros, report rate, debounce, and changing the knob inside the keyboard (see [Knob](#knob)).
-- The Fn + ↑/↓ hardware brightness level: it is not part of the readable profile, and at zero it keeps the
-  backlight dark regardless of what is written. If the LEDs stay dark, press Fn + ↑.
+- Fn + ↑/↓ and the knob's firmware brightness mode change the same per-effect brightness the app shows, but the app
+  only re-reads it when it becomes active. If the LEDs are dark, raise Brightness or press Fn + ↑.
 - The lighting preview is an approximation drawn from the effect names, not a capture of the firmware animations.
 
 ## Protocol
@@ -128,7 +128,7 @@ now and then and there is no per-packet re-request, so a read with a gap is redo
 | 6 | set | factory reset (unused here) |
 
 Profile: `[9]` 1 only for the custom effect, `[10]` effect id (1–18 in the vendor app's list order, 19 custom,
-0 off; unknown ids turn the LEDs off), `[24]` backlight sleep in 30 s units, `[56 + 2·id]` brightness 0–4,
+0 off; unknown ids turn the LEDs off), `[24]` backlight sleep in 30 s units, `[56 + 2·id]` brightness 0–4 (the custom effect uses `[117]` instead),
 `[57 + 2·id]` speed 0–4 in the high nibble and color select in the low nibble (0 = palette slot 0, 7 = multicolor).
 
 LED index = key-matrix slot = `column × 6 + row` (Esc 0, F1 12, knob click 90).

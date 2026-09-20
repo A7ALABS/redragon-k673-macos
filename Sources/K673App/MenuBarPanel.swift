@@ -41,6 +41,7 @@ struct MenuBarPanel: View {
         .foregroundStyle(Theme.text)
         .preferredColorScheme(Theme.current.isDark ? .dark : .light)
         .id(themeName)
+        .onAppear { model.refreshProfile() }
     }
 
     private var header: some View {
@@ -86,7 +87,7 @@ struct MenuBarPanel: View {
             .buttonStyle(.plain)
             .help(lit ? "Turn lighting off" : "Turn lighting back on")
 
-            Picker("", selection: Binding(get: { id }, set: { v in model.updateProfile { $0.effectID = v } })) {
+            Picker("", selection: Binding(get: { id }, set: { v in model.updateProfile(force: true) { $0.effectID = v } })) {
                 ForEach(Effect.all) { Text($0.name).tag($0.id) }
                 if effect == nil { Text("Effect \(id)").tag(id) }
             }

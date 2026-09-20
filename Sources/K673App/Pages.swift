@@ -10,7 +10,7 @@ struct LightingPage: View {
             let id = profile.effectID
             let effect = Effect.byID(id)
             HStack(alignment: .top, spacing: 16) {
-                EffectList(current: id) { v in model.updateProfile { $0.effectID = v } }
+                EffectList(current: id) { v in model.updateProfile(force: true) { $0.effectID = v } }
                     .frame(width: 190)
                 VStack(spacing: 16) {
                     LightingPreview(profile: profile, palette: palette, keyColors: model.keyColors)
@@ -328,7 +328,7 @@ struct DevicePage: View {
                     }
                 }
                 Card(title: "Good to know") {
-                    Text("Fn + ↑ / ↓ sets a hardware brightness level that this app cannot read. If the backlight stays dark, press Fn + ↑ a few times.")
+                    Text("Fn + ↑ / ↓ on the keyboard change the same brightness shown here; the app picks the change up when it comes to the front. If the backlight is dark, raise Brightness on the Lighting page or press Fn + ↑.")
                         .font(.system(size: 12))
                         .foregroundStyle(Theme.dim)
                         .fixedSize(horizontal: false, vertical: true)

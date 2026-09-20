@@ -40,6 +40,7 @@ struct RootView: View {
         .frame(minWidth: 1040, minHeight: 700)
         .preferredColorScheme(Theme.current.isDark ? .dark : .light)
         .id(themeName)
+        .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in model.refreshProfile() }
         .alert("Keyboard error", isPresented: Binding(get: { model.lastError != nil }, set: { if !$0 { model.lastError = nil } })) {
             Button("OK") {}
         } message: {
