@@ -36,7 +36,7 @@ func color(_ s: String?) -> RGB {
 }
 
 func findKey(_ name: String) -> KeyDef {
-    guard let k = Layout.keys.first(where: { $0.name.caseInsensitiveCompare(name) == .orderedSame }) else {
+    guard let k = (Layout.keys + [Layout.knob]).first(where: { $0.name.caseInsensitiveCompare(name) == .orderedSame }) else {
         fail("Unknown key '\(name)'. Run `k673ctl keys`.")
     }
     return k
@@ -73,7 +73,7 @@ case "effects":
     for e in Effect.all { print(String(format: "%2d  %@", e.id, e.name)) }
     exit(0)
 case "keys":
-    print(Layout.keys.map(\.name).joined(separator: " "))
+    print((Layout.keys + [Layout.knob]).map(\.name).joined(separator: " "))
     exit(0)
 case "actions":
     for (group, items) in Dictionary(grouping: KeyAction.catalog, by: \.group).sorted(by: { $0.key < $1.key }) {

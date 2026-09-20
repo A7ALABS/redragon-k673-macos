@@ -34,7 +34,7 @@ from the vendor software and verified on real hardware.
 ![Key remapping](docs/screenshots/keys.png)
 
 ### Knob
-Choose what turning the knob does: **Volume**, **Screen brightness** or **Keyboard backlight**.
+Choose what turning the knob does — **Volume**, **Screen brightness** or **Keyboard backlight** — and what a click does (**Mute**, **Play/Pause**, next lighting effect, or anything from the Keys page). Volume mode sets the click to Mute.
 The firmware hardwires the knob to volume keys, so the app converts them on the Mac (see [Knob](#knob)); it stays
 in the menu bar to keep doing that with the window closed.
 

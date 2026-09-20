@@ -278,10 +278,22 @@ struct DevicePage: View {
                         }
                     }
                 }
-                Card(title: "Knob rotation") {
+                Card(title: "Knob") {
                     HStack(spacing: 6) {
+                        Text("Turn").font(.system(size: 12, weight: .medium)).frame(width: 40, alignment: .leading)
                         ForEach(KnobMode.allCases) { mode in
                             Chip(title: mode.rawValue, active: model.knobMode == mode) { model.setKnobMode(mode) }
+                        }
+                    }
+                    if let matrix = model.matrix {
+                        let click = matrix[Layout.knobIndex]
+                        let factory = KeyMatrix.factory[Layout.knobIndex]
+                        HStack(spacing: 6) {
+                            Text("Click").font(.system(size: 12, weight: .medium)).frame(width: 40, alignment: .leading)
+                            Chip(title: "Mute", active: click == .mute) { model.remap(Layout.knobIndex, to: .mute) }
+                            Chip(title: "Play / Pause", active: click == .playPause) { model.remap(Layout.knobIndex, to: .playPause) }
+                            Chip(title: "Next lighting effect", active: click == factory) { model.remap(Layout.knobIndex, to: factory) }
+                            if ![.mute, .playPause, factory].contains(click) { Chip(title: click.title, active: true) {} }
                         }
                     }
                     if model.knobNeedsAccessibility {
@@ -295,7 +307,7 @@ struct DevicePage: View {
                             GhostButton(title: "Recheck", icon: "arrow.clockwise") { model.setKnobMode(model.knobMode) }
                         }
                     }
-                    Text("The keyboard itself always sends volume keys from the knob; this app converts them, so it has to be running (it stays in the menu bar). If turning the knob dims the keyboard LEDs directly instead, hold the knob down for 3 seconds to put it back in its volume mode.")
+                    Text("Choosing Volume also sets the click to Mute; any other click action is on the Keys page. The keyboard itself always sends volume keys when the knob turns; this app converts them, so it has to be running (it stays in the menu bar). If turning the knob dims the keyboard LEDs directly instead, hold the knob down for 3 seconds to put it back in its volume mode.")
                         .font(.system(size: 12))
                         .foregroundStyle(Theme.dim)
                         .fixedSize(horizontal: false, vertical: true)

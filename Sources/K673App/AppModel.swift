@@ -46,6 +46,7 @@ final class AppModel: ObservableObject {
         UserDefaults.standard.set(mode.rawValue, forKey: "knobMode")
         knob.setSuppressVolume(mode != .volume)
         knobNeedsAccessibility = knob.tapState == .needsAccessibility
+        if mode == .volume { remap(Layout.knobIndex, to: .mute) }
     }
 
     private func knobTurned(_ clockwise: Bool) {
@@ -147,7 +148,7 @@ final class AppModel: ObservableObject {
     }
 
     func remap(_ index: Int, to action: KeyAction) {
-        guard var m = matrix else { return }
+        guard var m = matrix, m[index] != action else { return }
         m[index] = action
         matrix = m
         schedule("matrix") { try $0.writeKeyMatrix(m) }

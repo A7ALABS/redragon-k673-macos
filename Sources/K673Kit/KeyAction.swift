@@ -12,6 +12,8 @@ public struct KeyAction: Equatable, Hashable, Sendable {
     public static func consumer(_ usage: UInt16) -> KeyAction { KeyAction(raw: [2, 0, UInt8(usage >> 8), UInt8(usage & 0xff)]) }
     public static let fn = KeyAction(raw: [0x0d, 0, 0, 0])
     public static let disabled = KeyAction(raw: [0, 0, 0, 0])
+    public static let mute = KeyAction.consumer(0xe2)
+    public static let playPause = KeyAction.consumer(0xcd)
     public static let backlightUp = KeyAction(raw: [8, 3, 1, 0])
     public static let backlightDown = KeyAction(raw: [8, 3, 2, 0])
 
