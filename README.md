@@ -145,3 +145,7 @@ mode; Fn + F10/F11 on this keyboard are treated the same way.
 
 Matrix types: `00` keyboard usage with `param` as modifier bitmask, `02` consumer usage, `0d` Fn, `07` lighting
 controls, `08` firmware functions (`08 03 01 00` / `08 03 02 00` = backlight level up / down, what Fn + ↑/↓ send).
+
+## License
+
+MIT — see [LICENSE](LICENSE).
